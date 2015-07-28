@@ -1,5 +1,4 @@
 library(ggplot2)
-avgByCity = aggregate(Year$count, by = list(weekday$Dest), FUN = mean)
 
 
 normalizeByDest = function(df, byCity) {
@@ -19,29 +18,37 @@ filteredTopn = function(df, n, totBound, countBound, dec = TRUE) {
 	return(topn)
 }
 
-ggSeries = function(topn) {
-	return(ggplot(topn) + geom_path(aes(DayOfWeek,normCount, group=Dest)) + aes(colour=factor(Dest)))
-
+savePlot = function(p, name) {
+        pdf(paste(name,"pdf", sep = "."))
+        print(p)
+        dev.off()
 }
 
 
 weekday = read.csv("out/weekday.csv", header = TRUE)
+avgByCity = aggregate(weekday$count, by = list(weekday$Dest), FUN = mean)
+
 weekdayNorm = normalizeByDest(weekday, avgByCity)
 weekdayTopn = filteredTopn(weekdayNorm, 10, 50000, 7)
-ggplot(weekdayTopn) + geom_path(aes(DayOfWeek,count, group=Dest)) + aes(colour=factor(Dest))
-
+p = ggplot(weekdayTopn) + geom_path(aes(DayOfWeek,count, group=Dest)) +
+	aes(colour=factor(Dest)) + ggtitle("Total Flights by Day of Week, 1987-2008")
+savePlot(p, "plots/weekday")
 
 month = read.csv("out/month.csv", header = TRUE)
 monthNorm = normalizeByDest(month, avgByCity)
 monthTopn = filteredTopn(monthNorm, 10, 50000, 12)
 monthTopn = monthTopn[order(monthTopn$Month),]
-ggplot(monthTopn) + geom_path(aes(Month,count, group=Dest)) + aes(colour=factor(Dest))
+p = ggplot(monthTopn) + geom_path(aes(Month,count, group=Dest)) +
+	aes(colour=factor(Dest)) + ggtitle("Total Flights by Month, 1987-2008")
+savePlot(p, "plots/month")
 
 
 year = read.csv("out/year.csv", header = TRUE)
 yearNorm = normalizeByDest(year, avgByCity)
 yearTopn = filteredTopn(yearNorm, 10, 50000, 20)
-ggplot(yearTopn) + geom_path(aes(Year,count, group=Dest)) + aes(colour=factor(Dest))
+p = ggplot(yearTopn) + geom_path(aes(Year,count, group=Dest)) +
+	aes(colour=factor(Dest)) + ggtitle("Total Flights by Year, 1987-2008")
+savePlot(p, "plots/year")
 
 
 
