@@ -25,14 +25,38 @@ then
 	hdfs dfs -touchz flights/allYears.csv
 	for YEAR in {1987..2008}
 	do
+		if [ $YEAR != '1987' ]
+		then
+			grep ^[12] data/$YEAR.csv > tmp.csv
+			mv tmp.csv data/$YEAR.csv
+		fi
 		hdfs dfs -appendToFile data/$YEAR.csv flights/allYears.csv
 	done
 fi
 
 echo "hdfs up to date"
 
-hdfs dfs -rmr output/*
-gradle clean jar
-hadoop jar ./build/libs/flights.jar flights/allYears.csv output/year output/month output/weekday
+if [ ! -f out/weekday.csv ]
+then
+	hdfs dfs -rmr output/*
+	gradle clean jar
+	hadoop jar ./build/libs/flights.jar flights/allYears.csv output/year output/month output/weekday
+
+
+	mkdir out
+	hdfs dfs -copyToLocal output/year/part-00000 out/year.csv
+	hdfs dfs -copyToLocal output/month/part-00000 out/month.csv
+	hdfs dfs -copyToLocal output/weekday/part-00000 out/weekday.csv
+
+fi
+
+
+/usr/bin/Rscript flightPlots.R
+
+
+
+
+
+
 
 
