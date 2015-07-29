@@ -50,10 +50,12 @@ then
 
 fi
 
+wget https://raw.githubusercontent.com/jpatokal/openflights/master/data/airports.dat -O data/codes
+sed "s/^[^,]*,//" data/codes | sed "s/,[^,]*,[^,]*,[^,]*,[^,]*,[^,]*,[^,]*,[^,]*$//" | grep '\"[A-Z][A-Z][A-Z]\"$' > data/codes.clean
 
-/usr/bin/Rscript flightPlots.R
 
-
+/usr/bin/Rscript flightCity.R
+open plots/*
 
 
 
